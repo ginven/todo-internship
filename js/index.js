@@ -1,6 +1,6 @@
 const form = document.querySelector('form');
-const todoDesc = document.querySelector('#todoDesc');
-const todoBtn = document.querySelector('#todoBtn');
+const todoDescInput = document.querySelector('#todoDesc');
+const todoBtnForm = document.querySelector('#todoBtn');
 const deadline = document.querySelector('#deadline');
 const todoList = document.querySelector('.todoList');
 
@@ -8,43 +8,52 @@ let todoDiv = document.createElement('div');
 
 let allTodos = [];
 
-function TodoItem(desc, deadline, timeLeft) {
+function TodoItem(desc, deadline) {
     this.description = desc;
     this.deadline = deadline;
-    this.timeLeft = timeLeft;
-};
+    this.timeRemaining = getTimeRemaining(deadline);
 
-const getTimeRemaining = deadline => {
-    const dateFuture = Date.parse(deadline);
-    const dateNow = Date.parse(new Date());
-    
-    if (dateFuture - dateNow < 0){
-        return `Due date has passed!`
-    } else {
-        let timeInSec = Math.floor((dateFuture - (dateNow))/1000);
-        let minutes = Math.floor(timeInSec/60);
-        let hours = Math.floor(minutes/60);
-        let days = Math.floor(hours/24);
-        
-        hours = hours-(days*24);
-        minutes = minutes-(days*24*60)-(hours*60);
-        seconds = timeInSec-(days*24*60*60)-(hours*60*60)-(minutes*60);
-    
-        return {
-            timeInSec, seconds, minutes, hours, days
-        }
-    }
   };
+  
+ const getTimeRemaining = deadline => {
+        if(!deadline) {
+            return '';
+        }
+        const dateFuture = Date.parse(deadline);
+        const dateNow = Date.parse(new Date());
+        
+        if (dateFuture - dateNow < 0){
+            return `Due date has passed!`
+        } else {
+            let timeInSec = Math.floor((dateFuture - (dateNow))/1000);
+            let minutes = Math.floor(timeInSec/60);
+            let hours = Math.floor(minutes/60);
+            let days = Math.floor(hours/24);
+            
+            hours = hours-(days*24);
+            minutes = minutes-(days*24*60)-(hours*60);
+            seconds = timeInSec-(days*24*60*60)-(hours*60*60)-(minutes*60);
+        
+            return `Time left: ${days} days, ${hours} and ${minutes} minutes`
+        }
+  
+};
 
 const addTodo = (event) => {
 
     // event.preventDefault()
 
-    let todoItem = new TodoItem(todoDesc.value, deadline.value, getTimeRemaining(deadline.value).timeInSec);
+    let todoItem = new TodoItem(todoDescInput.value, deadline.value);
     allTodos.push(todoItem);
     saveToStorage(allTodos);
     showFromStorage();
     form.reset()
+}
+
+const sortByTimeLeft = () => {
+    allTodos.sort((a, b) => {
+
+    })
 }
 
 const deleteTodo = (todoItemIndex) => {
@@ -58,14 +67,36 @@ const deleteTodo = (todoItemIndex) => {
       }
 }
 
+const checkedTodo = (todoItemIndex) => {
+    const todoCheckbox = document.querySelector(`#todoCheckbox_${todoItemIndex}`);
+
+    if (todoCheckbox.checked) {
+        const checkedItem = allTodos.splice(todoItemIndex, 1);
+        allTodos.push(checkedItem[0]);
+        saveToStorage(allTodos);
+        todoDiv.innerHTML = "";
+        showFromStorage();
+        const todoDescChecked = document.querySelector(`#todoDesc_${allTodos.length - 1}`);
+        todoDescChecked.classList.add('completed');
+      } else {
+        todoDescH.classList.remove('completed');
+      }
+}
+
 const saveToStorage = (todos) => {
     sessionStorage.setItem('todos', JSON.stringify(todos));
 }
 
-const sortByTimeRemaining = todos => {
-    for(let i = 0; i < todos.length; i++){
-        getTimeRemaining(todos[i].deadline)
-    }
+const listItemTemplate = (item, i) => {
+    return `
+        <div>
+            <input type="checkbox" onclick="checkedTodo(${i})" id="todoCheckbox_${i}"/>
+            <h1 id="todoDesc_${i}">${item.description}</h1>
+            <h3>${item.timeRemaining}</h3>
+            <button onclick="deleteTodo(${i})">Delete</button>
+        </div>
+    `
+    
 }
 
 
@@ -73,18 +104,11 @@ const showFromStorage = () => {
     if (sessionStorage.todos) {
         allTodos = JSON.parse(sessionStorage.getItem('todos'));
         for(let i = 0; i < allTodos.length; i++){
-            const timeRemaining = getTimeRemaining(allTodos[i].deadline);
-            let todoLi = document.createElement('li');
-            todoLi.innerHTML = 
 
-            `<input type="checkbox" id="todoCheck"/>
-            <h1>${allTodos[i].description}</h1>
-            <p>Time left: ${timeRemaining.days} days, ${timeRemaining.hours} hours and ${timeRemaining.minutes} minutes</p>
-            <button onclick="deleteTodo(${i})">Delete</button>
-            
-            `
+            let todoLi = document.createElement('li');
+            todoLi.innerHTML = listItemTemplate(allTodos[i], i);
             todoDiv.appendChild(todoLi);
-            todoList.append(todoDiv);
+            todoList.appendChild(todoDiv);
         }
 
     } else {

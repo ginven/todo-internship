@@ -4,21 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>To-Do</title>
-    <link href="assets/css/main.css" rel="stylesheet" >
+    <link href="assets/css/main.css" rel="stylesheet">
 </head>
 <body>
     <main>
         <div>
-            <h1>To Do</h1>
-            <p>Add new To-Do item</p>
-            <form>
-                <input id="todoDesc" type="text" maxlength="160" required="true" placeholder="Enter the task.. " />
-                <input id="deadline" type="datetime-local" name="deadline" />
-                <button id="todoBtn" type="submit">Add item</button>
+            <h1>My To-Do list</h1>
+            <form class="addTodoForm">
+                <label for="todoDesc">Add new To-do (maximum of 160 characters)</label>
+                <input id="todoDesc" type="text" maxlength="160" required="true" placeholder="e.g. Walk the dog" />
+                <label for="deadline">Select the deadline (optional)</label>
+                <input id="deadline" type="datetime-local" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}"/>
+                <button id="todoBtn" class="btn" type="submit">Add to the list</button>
             </form>
         </div>
-        <div class="allTodos">
+        <div class="heading">
             <h1>Current list of To-Dos</h1>
+            <select id="sortDropdown">
+                <option value="1" selected>Sort items by: </option>
+                <option value="2">Time remaining</option>
+                <option value="3">Completed items</option>
+            </select>
+        </div> 
+        <div>
             <ul class="todoList">
 
             </ul>
